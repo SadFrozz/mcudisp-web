@@ -37,8 +37,8 @@
 
 ```bash
 # Клонируйте репозиторий
-git clone <URL вашего репозитория>
-cd <папка репозитория>
+git clone https://github.com/SadFrozz/mcudisp-web.git
+cd mcudisp-web
 
 # Установите необходимые библиотеки
 pip install -r requirements.txt
