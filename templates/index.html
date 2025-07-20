@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>MCU Display</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        :root {
+            --main-color: #00ff41;
+            --bg-color: #1e3a1e;
+            --shadow-color: rgba(0, 255, 65, 0.3);
+            --border-color: #444;
+        }
+        body.recording-active {
+            --main-color: #ff2b2b;
+            --bg-color: #3a1e1e;
+            --shadow-color: rgba(255, 43, 43, 0.4);
+        }
+        body {
+            background-color: #1a1a1a;
+            color: var(--main-color);
+            font-family: 'Share Tech Mono', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 2vmin;
+            box-sizing: border-box;
+            user-select: none;
+            transition: color 0.3s ease;
+        }
+        .display-container {
+            background-color: #000;
+            border: 0.3vmin solid var(--border-color);
+            border-radius: 1.5vmin;
+            padding: 2vmin;
+            width: 95vw;
+            max-width: 1200px;
+            box-shadow: 0 0 2vmin var(--shadow-color);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5vmin;
+            transition: box-shadow 0.3s ease;
+        }
+        .lcd-screen {
+            background-color: var(--bg-color);
+            padding: 1.5vmin;
+            border-radius: 0.5vmin;
+            border: 0.1vmin solid var(--main-color);
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 1vmin;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .lcd-cell {
+            text-shadow: 0 0 0.5vmin var(--main-color);
+            white-space: pre;
+            overflow: hidden;
+            text-overflow: clip;
+            text-align: center;
+            line-height: 1.2;
+            transition: text-shadow 0.3s ease;
+        }
+        .channel-numbers {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 1vmin;
+            padding: 0 1.5vmin;
+        }
+        .channel-number {
+            text-align: center;
+            font-size: 1.8vmin;
+            color: #888;
+        }
+        .transport-info {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2vmin;
+        }
+        .timecode {
+            text-align: center;
+            font-size: clamp(40px, 8vmin, 90px);
+            letter-spacing: 0.2vmin;
+            text-shadow: 0 0 0.8vmin var(--main-color);
+            transition: text-shadow 0.3s ease;
+        }
+        .playback-status {
+            font-size: clamp(20px, 4vmin, 45px);
+            width: 10ch;
+            text-align: left;
+        }
+        /* Убрали статус-бар, который конфликтовал с channel-numbers */
+    </style>
+</head>
+<body>
+    <div class="display-container">
+        <div id="lcd-line1" class="lcd-screen"></div>
+        <div class="channel-numbers">
+            <div class="channel-number">1</div><div class="channel-number">2</div>
+            <div class="channel-number">3</div><div class="channel-number">4</div>
+            <div class="channel-number">5</div><div class="channel-number">6</div>
+            <div class="channel-number">7</div><div class="channel-number">8</div>
+        </div>
+        <div id="lcd-line2" class="lcd-screen"></div>
+        <div class="transport-info">
+            <div id="playback-status" class="playback-status">■ STOP</div>
+            <div id="timecode" class="timecode">00:00:00:00</div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const socket = io();
+            const bodyElem = document.body;
+            const line1Elem = document.getElementById('lcd-line1');
+            const line2Elem = document.getElementById('lcd-line2');
+            const timecodeElem = document.getElementById('timecode');
+            const statusElem = document.getElementById('playback-status');
+            
+            let currentLine1Text = ' '.repeat(56);
+            let currentLine2Text = ' '.repeat(56);
+
+            const adjustFontSize = () => {
+                const cells = document.querySelectorAll('.lcd-cell');
+                if (cells.length === 0) return;
+                const cell = cells[0];
+                const cellWidth = cell.clientWidth;
+                if (cellWidth === 0) return;
+                let fontSize = 50;
+                cell.style.fontSize = fontSize + 'px';
+                while (cell.scrollWidth > cellWidth && fontSize > 5) {
+                    fontSize--;
+                    cell.style.fontSize = fontSize + 'px';
+                }
+                cells.forEach(c => c.style.fontSize = fontSize + 'px');
+            };
+
+            const updateLine = (element, text) => {
+                const safeText = String(text || '').padEnd(56, ' ');
+                element.innerHTML = '';
+                for (let i = 0; i < 8; i++) {
+                    const chunk = safeText.substring(i * 7, (i + 1) * 7);
+                    const cell = document.createElement('div');
+                    cell.className = 'lcd-cell';
+                    cell.textContent = 'WWWWWWW';
+                    element.appendChild(cell);
+                }
+                adjustFontSize();
+                for (let i = 0; i < element.children.length; i++) {
+                    const chunk = safeText.substring(i * 7, (i + 1) * 7);
+                    element.children[i].textContent = chunk;
+                }
+            };
+
+            updateLine(line1Elem, currentLine1Text);
+            updateLine(line2Elem, currentLine2Text);
+
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    updateLine(line1Elem, currentLine1Text);
+                    updateLine(line2Elem, currentLine2Text);
+                }, 100);
+            });
+
+            socket.on('update_playback_status', (data) => {
+                statusElem.textContent = data.status_text;
+            });
+
+            socket.on('update_record_status', (data) => {
+                if (data.is_recording) {
+                    bodyElem.classList.add('recording-active');
+                } else {
+                    bodyElem.classList.remove('recording-active');
+                }
+            });
+
+            socket.on('update_display', (data) => {
+                currentLine1Text = data.line1;
+                currentLine2Text = data.line2;
+                updateLine(line1Elem, currentLine1Text);
+                updateLine(line2Elem, currentLine2Text);
+            });
+
+            socket.on('update_timecode', (data) => {
+                timecodeElem.textContent = data.timecode;
+            });
+        });
+    </script>
+</body>
+</html>

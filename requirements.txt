@@ -1,0 +1,6 @@
+mido
+python-rtmidi
+Flask
+Flask-SocketIO
+python-osc
+eventlet
