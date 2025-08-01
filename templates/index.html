@@ -191,6 +191,27 @@
                 timecodeElem.textContent = data.timecode;
             });
         });
+        // --- Add Wake Lock ---
+        let wakeLock = null;
+
+        const requestWakeLock = async () => {
+          try {
+            wakeLock = await navigator.wakeLock.request('screen');
+            console.log('Wake Lock is active.');
+            
+            wakeLock.addEventListener('release', () => {
+              console.log('Wake Lock is turned off.');
+            });
+          } catch (err) {
+            console.error(`Wake Lock error: ${err.name}, ${err.message}`);
+          }
+        };
+        requestWakeLock();
+        document.addEventListener('visibilitychange', () => {
+          if (wakeLock !== null && document.visibilityState === 'visible') {
+            requestWakeLock();
+          }
+        });
     </script>
 </body>
 </html>
