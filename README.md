@@ -14,11 +14,11 @@ A web-based display emulator for MCU-compatible MIDI controllers like the Behrin
 
 ## Информация на русском
 
-# Веб=дисплей для MCU-совместимых устройств (например Behringer BCF2000)
+# Веб-дисплей для MCU-совместимых устройств (например Behringer BCF2000)
 
 Эмулятор внешнего дисплея для MIDI-контроллера Behringer BCF2000 или любого другого устройства (в режиме эмуляции Mackie Control Universal), реализованный в виде веб-сервера. Позволяет использовать любое устройство в локальной сети (планшет, телефон, Raspberry Pi) в качестве полноценного дисплея для вашего контроллера при работе в Cockos Reaper.
 
-![Скриншот дисплея](https://i.yapx.ru/Z865V.png) 
+![Скриншот дисплея](https://lostpix.com/img/2025-08/02/0wbryozfadli58c3hrxtq231z.jpg) 
 
 ### Возможности
 
@@ -120,7 +120,7 @@ python server.py
 
 An external display emulator for the Behringer BCF2000 MIDI controller or any other device (in Mackie Control Universal emulation mode), implemented as a web server. It allows you to use any device on your local network (tablet, phone, Raspberry Pi) as a full-featured display for your controller when working with Cockos Reaper.
 
-![Display Screenshot](https://i.yapx.ru/Z865V.png)
+![Display Screenshot](https://lostpix.com/img/2025-08/02/0wbryozfadli58c3hrxtq231z.jpg)
 
 ### Features
 
