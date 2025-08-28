@@ -47,7 +47,7 @@ A web-based display emulator for MCU-compatible MIDI controllers like the Behrin
 
 ```bash
 # Клонируйте репозиторий
-git clone [https://github.com/SadFrozz/mcudisp-web.git](https://github.com/SadFrozz/mcudisp-web.git)
+git clone https://github.com/SadFrozz/mcudisp-web.git
 cd mcudisp-web
 
 # Установите необходимые библиотеки
@@ -149,7 +149,7 @@ Make sure you have **Python 3** installed.
 
 ```bash
 # Clone the repository
-git clone [https://github.com/SadFrozz/mcudisp-web.git](https://github.com/SadFrozz/mcudisp-web.git)
+git clone https://github.com/SadFrozz/mcudisp-web.git
 cd mcudisp-web
 
 # Install the required libraries
