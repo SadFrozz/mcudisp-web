@@ -26,7 +26,6 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            padding: 2vmin;
             box-sizing: border-box;
             user-select: none;
             transition: color 0.3s ease;
@@ -36,12 +35,12 @@
             border: 0.3vmin solid var(--border-color);
             border-radius: 1.5vmin;
             padding: 2vmin;
-            width: 95vw;
-            max-width: 1200px;
+            width: 100vw;
+            max-width: 1920px;
             box-shadow: 0 0 2vmin var(--shadow-color);
             display: flex;
             flex-direction: column;
-            gap: 1.5vmin;
+            gap: 0.75vmin;
             transition: box-shadow 0.3s ease;
         }
         .lcd-screen {
@@ -71,7 +70,7 @@
         }
         .channel-number {
             text-align: center;
-            font-size: 1.8vmin;
+            font-size: 5vmin;
             color: #888;
         }
         .transport-info {
@@ -92,7 +91,39 @@
             width: 10ch;
             text-align: left;
         }
-        /* Убрали статус-бар, который конфликтовал с channel-numbers */
+        .separator {
+            border: none;
+            height: 1px;
+            background-color: #333;
+            margin: 1vmin 0;
+            display: none; /* Скрыт по умолчанию */
+        }
+        .function-keys {
+            display: none; /* Скрыт по умолчанию */
+            grid-template-columns: repeat(8, 1fr);
+            gap: 1vmin;
+        }
+        .function-key-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 0.5vmin;
+            min-height: 8vmin;
+			border-right: dotted;
+			border-left: dotted;
+        }
+        .f-key-label {
+            font-size: 8vmin;
+            font-weight: bold;
+            color: #999;
+        }
+        .f-key-name {
+            font-size: 7vmin;
+            color: #ccc;
+            text-align: center;
+            word-break: break-word;
+        }
     </style>
 </head>
 <body>
@@ -109,6 +140,8 @@
             <div id="playback-status" class="playback-status">■ STOP</div>
             <div id="timecode" class="timecode">00:00:00:00</div>
         </div>
+        <hr id="f-keys-separator" class="separator">
+        <div id="function-keys" class="function-keys"></div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js"></script>
@@ -120,6 +153,8 @@
             const line2Elem = document.getElementById('lcd-line2');
             const timecodeElem = document.getElementById('timecode');
             const statusElem = document.getElementById('playback-status');
+            const functionKeysElem = document.getElementById('function-keys');
+            const separatorElem = document.getElementById('f-keys-separator');
             
             let currentLine1Text = ' '.repeat(56);
             let currentLine2Text = ' '.repeat(56);
@@ -143,7 +178,6 @@
                 const safeText = String(text || '').padEnd(56, ' ');
                 element.innerHTML = '';
                 for (let i = 0; i < 8; i++) {
-                    const chunk = safeText.substring(i * 7, (i + 1) * 7);
                     const cell = document.createElement('div');
                     cell.className = 'lcd-cell';
                     cell.textContent = 'WWWWWWW';
@@ -158,7 +192,7 @@
 
             updateLine(line1Elem, currentLine1Text);
             updateLine(line2Elem, currentLine2Text);
-
+            
             let resizeTimeout;
             window.addEventListener('resize', () => {
                 clearTimeout(resizeTimeout);
@@ -168,16 +202,11 @@
                 }, 100);
             });
 
-            socket.on('update_playback_status', (data) => {
-                statusElem.textContent = data.status_text;
-            });
+            // --- Обработчики событий от сервера ---
+            socket.on('update_playback_status', (data) => { statusElem.textContent = data.status_text; });
 
             socket.on('update_record_status', (data) => {
-                if (data.is_recording) {
-                    bodyElem.classList.add('recording-active');
-                } else {
-                    bodyElem.classList.remove('recording-active');
-                }
+                bodyElem.classList.toggle('recording-active', data.is_recording);
             });
 
             socket.on('update_display', (data) => {
@@ -187,10 +216,34 @@
                 updateLine(line2Elem, currentLine2Text);
             });
 
-            socket.on('update_timecode', (data) => {
-                timecodeElem.textContent = data.timecode;
+            socket.on('update_timecode', (data) => { timecodeElem.textContent = data.timecode; });
+
+            // --- Обработчик для названий функций ---
+            socket.on('update_function_names', (data) => {
+                // Если флаг available === true, показываем блок
+                if (data.available) {
+                    separatorElem.style.display = 'block';
+                    functionKeysElem.style.display = 'grid';
+
+                    functionKeysElem.innerHTML = ''; // Очищаем старые ячейки
+                    const names = data.names;
+                    for (let i = 0; i < 8; i++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'function-key-cell';
+                        const label = document.createElement('div');
+                        label.className = 'f-key-label';
+                        label.textContent = `F${i + 1}`;
+                        const name = document.createElement('div');
+                        name.className = 'f-key-name';
+                        name.textContent = names[i] || '---';
+                        cell.appendChild(label);
+                        cell.appendChild(name);
+                        functionKeysElem.appendChild(cell);
+                    }
+                }
             });
         });
+        
         // --- Add Wake Lock ---
         let wakeLock = null;
 

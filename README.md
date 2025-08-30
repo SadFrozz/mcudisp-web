@@ -27,6 +27,7 @@ A web-based display emulator for MCU-compatible MIDI controllers like the Behrin
 * **Статус транспорта**: Отображение статуса `PLAY` или `STOP`.
 * **Индикация записи**: Вся цветовая схема интерфейса меняется с зелёной на красную, когда активна запись.
 * **Номера каналов**: Статичные номера каналов для удобной навигации.
+* **Функциональные клавиши**: Отображение названий фунциональных клавиш, для этого отредактируйте файл func.txt (номер строки соответствует своей номерной Fn клавише, читаются только первые 8 строк, есть автоперенос строк). Если файл отсутствует или поврежден, то блок с названиями не отображается.
 * **Адаптивный дизайн**: Интерфейс автоматически масштабируется под экран любого размера и соотношения сторон.
 
 ### Технологии
@@ -108,6 +109,7 @@ python server.py
 ├── templates/
 │   └── index.html    # Файл веб-интерфейса
 ├── requirements.txt  # Список зависимостей Python
+├── func.txt          # Названия Fn-клавиш (строки 1-8)
 └── Readme.md         # Этот файл
 ```
 
@@ -129,6 +131,7 @@ An external display emulator for the Behringer BCF2000 MIDI controller or any ot
 * **Transport Status**: Shows the current transport status (`PLAY` or `STOP`).
 * **Recording Indication**: The entire UI color scheme changes from green to red when recording is active.
 * **Channel Numbers**: Static channel numbers are displayed for easy navigation.
+* **Function keys**: Display the names of the function keys, to do this, edit the func.txt file (the line number corresponds to its Fn key number, only the first 8 lines are read, there is an automatic line break). If the file is missing or damaged, the block with the names is not displayed.
 * **Responsive Design**: The interface automatically scales to fit any screen size and aspect ratio.
 
 ### Technology
@@ -209,5 +212,6 @@ Open a web browser on any device on your local network and navigate to the IP ad
 ├── list_ports.py     # Helper script to find MIDI ports
 ├── templates/
 │   └── index.html    # Web interface file
+├── func.txt          # Fn-keys names
 ├── requirements.txt  # Python dependency list
 └── Readme.md         # This file

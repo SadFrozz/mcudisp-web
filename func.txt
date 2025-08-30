@@ -1,0 +1,8 @@
+Для отображения
+Названий Fn-клавиш
+Заполните файл
+func.txt
+To display
+Fn-key names
+Fill in the file
+func.txt
